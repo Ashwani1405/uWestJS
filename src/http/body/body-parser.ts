@@ -324,7 +324,19 @@ export class BodyParser {
   }
 
   /**
-   * Flush buffered chunks to the passthrough callback
+   * Flush buffered chunks to the passthrough callback.
+   *
+   * Exception handling: if `passthroughCallback` throws while iterating
+   * the captured chunk array, the exception propagates to the caller and
+   * any chunks that had not yet been delivered are dropped along with the
+   * captured array. The parser still resumes via the `finally` block, so
+   * the stream is not left paused, but the lost chunks are not retried.
+   *
+   * This is intentional. A throwing `passthroughCallback` indicates a
+   * programming error in user code; the contract is that the callback
+   * does not throw under normal operation. Mid-iteration data loss is
+   * preferable to silently swallowing exceptions or letting the parser
+   * sit in a stuck state because of buggy user code.
    */
   private flushBuffered(): void {
     if (this.bufferedChunks.length > 0) {
@@ -339,6 +351,8 @@ export class BodyParser {
 
           if (this.passthroughCallback) {
             // Chunk is already a Buffer, no need to convert
+            // If the callback throws here, the remaining `chunks[i+1..]`
+            // are dropped on purpose -- see the function-level docblock.
             this.passthroughCallback(chunks[i], isLast);
           }
         }
