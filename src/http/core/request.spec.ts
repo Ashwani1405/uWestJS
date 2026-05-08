@@ -1276,7 +1276,7 @@ describe('UwsRequest', () => {
       onDataCallback(toArrayBuffer(Buffer.from('')), true);
     });
 
-    it('should activate streaming mode for non-pipe consumers', (done) => {
+    it('should activate streaming mode for non-pipe consumers', async () => {
       jest.useFakeTimers();
 
       setHeaders(['content-type', 'application/octet-stream'], ['content-length', '100']);
@@ -1290,13 +1290,14 @@ describe('UwsRequest', () => {
 
       // Use for-await-of (non-pipe consumer) which calls _read()
       const chunks: Buffer[] = [];
-      (async () => {
+
+      const consumePromise = (async () => {
         for await (const chunk of req) {
           chunks.push(chunk);
         }
+
         const result = Buffer.concat(chunks).toString();
         expect(result).toBe('Hello World');
-        done();
       })();
 
       // Send more data after streaming is activated
@@ -1305,9 +1306,14 @@ describe('UwsRequest', () => {
         onDataCallback(toArrayBuffer(Buffer.from('World')), true);
       });
 
-      // Advance timers to trigger setImmediate
-      jest.runAllTimers();
-      jest.useRealTimers();
+      // Advance timers and allow promise callbacks to interleave
+      await jest.runAllTimersAsync();
+
+      try {
+        await consumePromise;
+      } finally {
+        jest.useRealTimers();
+      }
     });
 
     it('should support multipart streaming', async () => {
