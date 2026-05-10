@@ -1,0 +1,216 @@
+{
+  "timestamp": "2026-05-10T13:36:21.803Z",
+  "date": "2026-05-10",
+  "commit": "8e5aedc",
+  "commitMessage": "test(routing): compute content-length dynamically in middleware specs (#109)\n\nTwo tests in route-registry-middleware.spec.ts hardcode\ncontent-length values that don't match the JSON payload they then\nsend: '13' for {\"number\":5} (12 bytes) and '27' for\n{\"name\":\"John\",\"age\":30} (24 bytes). The tests pass today only\nbecause the implementation relies on uWS's isLast flag rather\nthan validating content-length, but the headers misrepresent the\nHTTP behavior real uWebSockets.js performs.\n\nCompute content-length from Buffer.byteLength(bodyData) at the\ntop of each test, where bodyData is already the JSON string we'll\nlater send via onData. Body and header now agree by construction\nand a future change to either won't drift them apart.\n\nThe third middleware test (around line 312) was already doing this\nvia String(bodyBuffer.length); this change brings the other two in\nline.\n\nCloses #83.\n\nCo-authored-by: Claude Opus 4.7 (1M context) <noreply@anthropic.com>",
+  "branch": "main",
+  "nodeVersion": "v24.14.1",
+  "platform": "linux",
+  "arch": "x64",
+  "results": [
+    {
+      "scenario": "compression",
+      "express": {
+        "reqPerSec": "8.11k",
+        "throughput": "4.26 MB/s"
+      },
+      "fastify": {
+        "reqPerSec": "6.68k",
+        "throughput": "3.42 MB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "9.84k",
+        "throughput": "4.52 MB/s"
+      },
+      "vsExpress": "**1.21x**",
+      "vsFastify": "**1.47x**"
+    },
+    {
+      "scenario": "headers",
+      "express": {
+        "reqPerSec": "30.41k",
+        "throughput": "5.66 MB/s"
+      },
+      "fastify": {
+        "reqPerSec": "50.71k",
+        "throughput": "9.48 MB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "89.90k",
+        "throughput": "14.15 MB/s"
+      },
+      "vsExpress": "**2.96x**",
+      "vsFastify": "**1.77x**"
+    },
+    {
+      "scenario": "hello-world",
+      "express": {
+        "reqPerSec": "29.16k",
+        "throughput": "4.84 MB/s"
+      },
+      "fastify": {
+        "reqPerSec": "47.61k",
+        "throughput": "7.99 MB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "100.14k",
+        "throughput": "9.93 MB/s"
+      },
+      "vsExpress": "**3.43x**",
+      "vsFastify": "**2.10x**"
+    },
+    {
+      "scenario": "json-response",
+      "express": {
+        "reqPerSec": "27.10k",
+        "throughput": "7.39 MB/s"
+      },
+      "fastify": {
+        "reqPerSec": "48.08k",
+        "throughput": "13.16 MB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "82.50k",
+        "throughput": "20.14 MB/s"
+      },
+      "vsExpress": "**3.04x**",
+      "vsFastify": "**1.72x**"
+    },
+    {
+      "scenario": "mixed-response",
+      "express": {
+        "reqPerSec": "28.52k",
+        "throughput": "6.58 MB/s"
+      },
+      "fastify": {
+        "reqPerSec": "42.92k",
+        "throughput": "9.95 MB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "89.48k",
+        "throughput": "18.09 MB/s"
+      },
+      "vsExpress": "**3.14x**",
+      "vsFastify": "**2.08x**"
+    },
+    {
+      "scenario": "post-json",
+      "express": {
+        "reqPerSec": "25.82k",
+        "throughput": "4.78 MB/s"
+      },
+      "fastify": {
+        "reqPerSec": "21.62k",
+        "throughput": "5.90 MB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "38.64k",
+        "throughput": "6.56 MB/s"
+      },
+      "vsExpress": "**1.50x**",
+      "vsFastify": "**1.79x**"
+    },
+    {
+      "scenario": "query-params",
+      "express": {
+        "reqPerSec": "22.95k",
+        "throughput": "5.06 MB/s"
+      },
+      "fastify": {
+        "reqPerSec": "47.59k",
+        "throughput": "10.53 MB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "88.96k",
+        "throughput": "11.96 MB/s"
+      },
+      "vsExpress": "**3.88x**",
+      "vsFastify": "**1.87x**"
+    },
+    {
+      "scenario": "route-params",
+      "express": {
+        "reqPerSec": "28.07k",
+        "throughput": "6.40 MB/s"
+      },
+      "fastify": {
+        "reqPerSec": "45.74k",
+        "throughput": "10.47 MB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "89.62k",
+        "throughput": "17.86 MB/s"
+      },
+      "vsExpress": "**3.19x**",
+      "vsFastify": "**1.96x**"
+    },
+    {
+      "scenario": "static-file",
+      "express": {
+        "reqPerSec": "29.49k",
+        "throughput": "292.64 MB/s"
+      },
+      "fastify": {
+        "reqPerSec": "38.38k",
+        "throughput": "380.41 MB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "74.23k",
+        "throughput": "734.60 MB/s"
+      },
+      "vsExpress": "**2.52x**",
+      "vsFastify": "**1.93x**"
+    },
+    {
+      "scenario": "streaming-upload",
+      "express": {
+        "reqPerSec": "257.75",
+        "throughput": "57.39 KB/s"
+      },
+      "fastify": {
+        "reqPerSec": "246.11",
+        "throughput": "51.43 KB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "269.22",
+        "throughput": "52.06 KB/s"
+      },
+      "vsExpress": "**1.04x**",
+      "vsFastify": "**1.09x**"
+    },
+    {
+      "scenario": "streaming-with-content-length",
+      "express": {
+        "reqPerSec": "537.76",
+        "throughput": "2.63 GB/s"
+      },
+      "fastify": {
+        "reqPerSec": "531.60",
+        "throughput": "2.60 GB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "534.88",
+        "throughput": "2.61 GB/s"
+      },
+      "vsExpress": "**0.99x**",
+      "vsFastify": "**1.01x**"
+    },
+    {
+      "scenario": "streaming-without-content-length",
+      "express": {
+        "reqPerSec": "530.81",
+        "throughput": "2.59 GB/s"
+      },
+      "fastify": {
+        "reqPerSec": "521.09",
+        "throughput": "2.55 GB/s"
+      },
+      "uwestjs": {
+        "reqPerSec": "526.21",
+        "throughput": "2.57 GB/s"
+      },
+      "vsExpress": "**0.99x**",
+      "vsFastify": "**1.01x**"
+    }
+  ]
+}
